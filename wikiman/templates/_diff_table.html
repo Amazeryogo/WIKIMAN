@@ -1,0 +1,11 @@
+<table class="diff">
+  {% for kind, a, b, text in rows %}
+    {% if kind == 'skip' %}
+      <tr class="skip"><td colspan="3">⋯</td></tr>
+    {% else %}
+      <tr class="{{ kind }}"><td class="ln">{{ a or '' }}</td><td class="ln">{{ b or '' }}</td><td class="code"><span class="sign">{{ {'add':'+','del':'−','ctx':' '}[kind] }}</span>{{ text }}</td></tr>
+    {% endif %}
+  {% else %}
+    <tr class="skip"><td colspan="3">No differences.</td></tr>
+  {% endfor %}
+</table>

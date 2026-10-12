@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}All pages{% endblock %}
+{% block content %}
+<h1 class="page-title">All pages <span class="muted">({{ count }})</span></h1>
+<nav class="letters">{% for k in groups %}<a href="#l-{{ k }}">{{ k }}</a>{% endfor %}</nav>
+<div class="columns">
+{% for k, pages in groups.items() %}
+  <section id="l-{{ k }}"><h2>{{ k }}</h2>
+    <ul>{% for p in pages %}<li>{% if p.is_redirect %}<a class="redirect-link" href="{{ url_for('wiki.view', slug=p.slug, redirect='no') }}">{{ p.title }}</a> <span class="muted small">↪</span>{% else %}<a href="{{ url_for('wiki.view', slug=p.slug) }}">{{ p.title }}</a>{% endif %}</li>{% endfor %}</ul>
+  </section>
+{% endfor %}
+</div>
+{% endblock %}

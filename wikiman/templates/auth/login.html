@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<form method="post" class="card auth">
+  <h1>Log in</h1>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="field"><span>Username</span><input name="username" autocomplete="username" required autofocus></label>
+  <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
+  <label class="check"><input type="checkbox" name="remember" value="1"> Keep me logged in</label>
+  <button class="btn block">Log in</button>
+  {% if config.ALLOW_REGISTRATION %}<p class="muted">No account? <a href="{{ url_for('auth.register', next=request.args.get('next')) }}">Sign up</a></p>{% endif %}
+</form>
+{% endblock %}

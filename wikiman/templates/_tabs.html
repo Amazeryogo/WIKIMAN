@@ -1,0 +1,19 @@
+<div class="tabs">
+  <a href="{{ url_for('wiki.view', slug=page.slug) }}" class="{{ 'active' if active == 'read' }}">Read</a>
+  {% if can_edit(page) %}<a href="{{ url_for('wiki.edit', slug=page.slug) }}" class="{{ 'active' if active == 'edit' }}" accesskey="e">Edit</a>{% endif %}
+  <a href="{{ url_for('wiki.page_history', slug=page.slug) }}" class="{{ 'active' if active == 'history' }}">History</a>
+  {% if can_edit(page) and page.slug != config.MAIN_PAGE %}<a href="{{ url_for('wiki.rename', slug=page.slug) }}" class="{{ 'active' if active == 'rename' }}">Rename</a>{% endif %}
+  {% if g.user and g.user.is_admin %}
+    <span class="spacer"></span>
+    <form method="post" action="{{ url_for('wiki.protect', slug=page.slug) }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="linklike">{{ 'Unprotect' if page.protected else 'Protect' }}</button>
+    </form>
+    {% if page.slug != config.MAIN_PAGE %}
+    <form method="post" action="{{ url_for('wiki.delete', slug=page.slug) }}" class="inline" onsubmit="return confirm('Delete this page? Its history is kept.')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="linklike danger">Delete</button>
+    </form>
+    {% endif %}
+  {% endif %}
+</div>

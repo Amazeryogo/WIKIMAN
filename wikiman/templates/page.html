@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block content %}
+<div class="page-layout">
+  <article class="page">
+    <h1 class="page-title">{{ page.title }}{% if page.protected %} <span class="lock" title="Protected">🔒</span>{% endif %}</h1>
+    {% set active = 'read' %}{% include "_tabs.html" %}
+    {% if redirected_from %}
+      <p class="redirected muted">↪ Redirected from <a href="{{ url_for('wiki.view', slug=redirected_from.slug, redirect='no') }}">{{ redirected_from.title }}</a></p>
+    {% endif %}
+    {% if redirect_to %}
+      <div class="redirect-box">
+        <span class="muted">This page is a redirect to</span>
+        <a href="{{ url_for('wiki.view', slug=redirect_to) }}" class="wikilink{{ '' if redirect_exists else ' missing' }}">{{ redirect_to.replace('-', ' ')|capitalize }}</a>
+        {% if not redirect_exists %}<span class="muted">(which doesn't exist)</span>{% endif %}
+      </div>
+    {% else %}
+    <div class="prose">{{ html }}</div>
+    {% endif %}
+    <p class="meta">
+      Last edited {{ page.rev_time|ago }} by
+      {% if page.editor %}<a href="{{ url_for('wiki.user', username=page.editor) }}">{{ page.editor }}</a>{% else %}<em>system</em>{% endif %}
+      {% if page.summary %}· <span class="summary">“{{ page.summary }}”</span>{% endif %}
+    </p>
+  </article>
+  <aside class="sidebar">
+    <h2>What links here</h2>
+    {% if backlinks %}
+      <ul>{% for b in backlinks %}<li{% if b.via %} class="via"{% endif %}>
+        <a href="{{ url_for('wiki.view', slug=b.slug, redirect='no' if b.is_redirect else None) }}">{{ b.title }}</a>
+        {% if b.is_redirect %}<span class="muted small">(redirect)</span>{% endif %}
+        {% if b.via %}<span class="muted small">via {{ b.via }}</span>{% endif %}
+      </li>{% endfor %}</ul>
+    {% else %}
+      <p class="muted">Nothing yet. Link to it with <code>[[{{ page.title }}]]</code>.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

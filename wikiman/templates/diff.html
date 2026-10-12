@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Changes to {{ page.title }}{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ page.title }}</h1>
+{% set active = 'history' %}{% include "_tabs.html" %}
+<div class="diff-head">
+  <div>
+    {% if old %}<a href="{{ url_for('wiki.revision', slug=page.slug, rev_id=old.id) }}">Revision {{ old.id }}</a> · {{ old.created_at|ago }} · {{ old.username or 'system' }}{% else %}<em>Page created</em>{% endif %}
+  </div>
+  <div class="arrow">→</div>
+  <div>
+    <a href="{{ url_for('wiki.revision', slug=page.slug, rev_id=new.id) }}">Revision {{ new.id }}</a> · {{ new.created_at|ago }} · {{ new.username or 'system' }}
+    {% if new.summary %}<div class="summary">“{{ new.summary }}”</div>{% endif %}
+  </div>
+</div>
+<p><span class="delta pos">+{{ added }}</span> <span class="delta neg">−{{ removed }}</span> lines
+{% if title_changed %}· title changed from “{{ old.title }}” to “{{ new.title }}”{% endif %}</p>
+{% include "_diff_table.html" %}
+{% endblock %}

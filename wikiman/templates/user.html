@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ u.username }}{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ u.username }}{% if u.is_admin %} <span class="badge">admin</span>{% endif %}</h1>
+<p class="muted">Joined {{ u.created_at|ago }} · {{ changes|length }} edit{{ 's' if changes|length != 1 }} shown
+{% if g.user and g.user.id == u.id %}· <a href="{{ url_for('auth.change_password') }}">Change password</a>{% endif %}</p>
+{% set show_user = false %}{% include "special/_changes.html" %}
+{% endblock %}

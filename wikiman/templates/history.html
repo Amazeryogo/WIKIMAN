@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}History of {{ page.title }}{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ page.title }}</h1>
+{% set active = 'history' %}{% include "_tabs.html" %}
+<form action="{{ url_for('wiki.diff', slug=page.slug) }}" method="get">
+  <p class="muted">Pick two revisions to compare. {{ revisions|length }} revision{{ 's' if revisions|length != 1 }}.</p>
+  <table class="list history">
+    <thead><tr><th>From</th><th>To</th><th>When</th><th>Who</th><th>Size</th><th>Summary</th><th></th></tr></thead>
+    <tbody>
+    {% for r in revisions %}
+      <tr>
+        <td><input type="radio" name="from" value="{{ r.id }}" {{ 'checked' if loop.index == 2 }} aria-label="Compare from revision {{ r.id }}"></td>
+        <td><input type="radio" name="to" value="{{ r.id }}" {{ 'checked' if loop.first }} aria-label="Compare to revision {{ r.id }}"></td>
+        <td><a href="{{ url_for('wiki.revision', slug=page.slug, rev_id=r.id) }}">{{ r.created_at|ago }}</a>{% if loop.first %} <span class="badge">current</span>{% endif %}</td>
+        <td>{% if r.username %}<a href="{{ url_for('wiki.user', username=r.username) }}">{{ r.username }}</a>{% else %}<em>system</em>{% endif %}</td>
+        <td class="delta {{ 'pos' if r.delta > 0 else ('neg' if r.delta < 0) }}">{{ '%+d'|format(r.delta) }}</td>
+        <td>{{ r.summary }}</td>
+        <td class="actions">
+          <a href="{{ url_for('wiki.diff', slug=page.slug, to=r.id) }}">diff</a>
+          {% if not loop.first and can_edit(page) %}
+          <button form="revert-{{ r.id }}" class="linklike">revert to this</button>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if revisions|length > 1 %}<button class="btn">Compare selected</button>{% endif %}
+</form>
+{% for r in revisions %}{% if not loop.first and can_edit(page) %}
+<form id="revert-{{ r.id }}" method="post" action="{{ url_for('wiki.revert', slug=page.slug, rev_id=r.id) }}" hidden>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endif %}{% endfor %}
+{% endblock %}

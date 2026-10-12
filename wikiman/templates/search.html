@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h1 class="page-title">Search</h1>
+<form action="{{ url_for('wiki.search') }}" method="get" class="big-search">
+  <input type="search" name="q" value="{{ q }}" autofocus placeholder="Search titles and text">
+  <button class="btn">Search</button>
+</form>
+{% if q %}
+  {% if create_slug and not exact %}
+    <p>No page is titled “{{ q }}”.
+      {% if g.user %}<a href="{{ url_for('wiki.edit', slug=create_slug, title=q) }}">Create it</a>.{% endif %}</p>
+  {% elif exact %}
+    <p>There's a page with that exact title: <a href="{{ url_for('wiki.view', slug=create_slug) }}">{{ q }}</a>.</p>
+  {% endif %}
+  <p class="muted">{{ results|length }} result{{ 's' if results|length != 1 }}.</p>
+  <ol class="results">
+    {% for r in results %}
+      <li>
+        <a href="{{ url_for('wiki.view', slug=r.slug) }}" class="result-title">{{ r.title }}</a>
+        <div class="snippet">{{ r.snippet }}</div>
+        <div class="muted small">updated {{ r.updated_at|ago }}</div>
+      </li>
+    {% endfor %}
+  </ol>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Editing {{ title }}{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ 'Editing' if page else 'Creating' }} <span class="muted">{{ title }}</span></h1>
+{% if page %}{% set active = 'edit' %}{% include "_tabs.html" %}{% endif %}
+
+{% if conflict %}
+<details class="conflict" open>
+  <summary>Their version → your version</summary>
+  {% set rows = conflict %}{% include "_diff_table.html" %}
+</details>
+{% endif %}
+
+<form method="post" class="editor" id="editor">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="base_rev" value="{{ base_rev }}">
+  <label class="field">
+    <span>Title</span>
+    <input name="title" value="{{ title }}" required>
+  </label>
+  <div class="split">
+    <div class="pane">
+      <div class="pane-head">Markdown <span class="muted">· <code>[[Page]]</code> links · Ctrl/⌘+S saves</span></div>
+      <textarea name="body" id="body" spellcheck="true" autofocus>{{ body }}</textarea>
+    </div>
+    <div class="pane">
+      <div class="pane-head">Preview</div>
+      <div class="prose preview" id="preview">{% if preview %}{{ preview }}{% else %}<p class="muted">Start typing…</p>{% endif %}</div>
+    </div>
+  </div>
+  <div class="save-row">
+    <input name="summary" value="{{ summary }}" placeholder="Summary of your change (optional)" maxlength="300" class="grow">
+    <button name="preview" value="1" class="btn ghost">Preview</button>
+    <button name="save" value="1" class="btn">Save</button>
+    <a href="{{ url_for('wiki.view', slug=slug) if page else url_for('wiki.index') }}" class="muted">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var ta = document.getElementById('body'), pv = document.getElementById('preview');
+  var form = document.getElementById('editor'), timer = null, dirty = false, seq = 0;
+  var token = form.querySelector('[name=csrf_token]').value;
+  function refresh() {
+    var mine = ++seq, fd = new FormData();
+    fd.append('body', ta.value);
+    fetch('{{ url_for("wiki.api_preview") }}', {method: 'POST', body: fd, headers: {'X-CSRF-Token': token}})
+      .then(function (r) { return r.json() })
+      .then(function (d) { if (mine === seq) pv.innerHTML = d.html || '<p class="muted">Nothing to preview.</p>' })
+      .catch(function () {});
+  }
+  ta.addEventListener('input', function () { dirty = true; clearTimeout(timer); timer = setTimeout(refresh, 250) });
+  ta.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      var s = ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end');
+      ta.dispatchEvent(new Event('input'));
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault(); dirty = false;
+      var b = document.createElement('input'); b.type = 'hidden'; b.name = 'save'; b.value = '1';
+      form.appendChild(b); form.submit();
+    }
+  });
+  form.addEventListener('submit', function () { dirty = false });
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = '' } });
+  if (ta.value && !{{ 'true' if preview else 'false' }}) refresh();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Rename {{ page.title }}{% endblock %}
+{% block content %}
+<h1 class="page-title">Rename <span class="muted">{{ page.title }}</span></h1>
+{% set active = 'rename' %}{% include "_tabs.html" %}
+<form method="post" class="rename-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="field">
+    <span>New title</span>
+    <input name="new_title" id="newTitle" value="{{ new_title }}" required autofocus>
+  </label>
+  <p class="muted small">New address: <code id="newSlug">/wiki/{{ page.slug }}</code></p>
+
+  <label class="check"><input type="checkbox" name="leave_redirect" value="1" {{ 'checked' if leave_redirect }}>
+    Leave a redirect at the old address, so bookmarks and outside links keep working</label>
+  <label class="check"><input type="checkbox" name="update_links" value="1" {{ 'checked' if update_links }}>
+    Change <code>[[{{ page.title }}]]</code> links on other pages to the new title
+    {% if backlinks %}({{ backlinks|length }} page{{ 's' if backlinks|length != 1 }}){% endif %}</label>
+
+  {% if backlinks %}
+  <details class="small">
+    <summary>Pages that link here</summary>
+    <ul>{% for b in backlinks %}<li>{{ b.title }}{% if b.is_redirect %} <span class="muted">(redirect, always updated)</span>{% endif %}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+  <p class="muted small">The full history moves with the page. Leaving both boxes unticked turns existing links red.</p>
+  <div class="save-row">
+    <button class="btn">Rename page</button>
+    <a href="{{ url_for('wiki.view', slug=page.slug) }}" class="muted">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var inp = document.getElementById('newTitle'), out = document.getElementById('newSlug');
+  function slug(t) {
+    return t.normalize('NFKC').trim().toLowerCase()
+      .replace(/[^\p{L}\p{N}_\s-]/gu, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function upd() { out.textContent = '/wiki/' + (slug(inp.value) || '…') }
+  inp.addEventListener('input', upd); upd();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Wanted pages{% endblock %}
+{% block content %}
+<h1 class="page-title">Wanted pages</h1>
+<p class="muted">Pages that other pages link to but nobody has written yet.</p>
+<ul class="plain">
+{% for w in wanted %}
+  <li><a class="wikilink missing" href="{{ url_for('wiki.edit', slug=w.slug) }}">{{ w.slug.replace('-', ' ')|capitalize }}</a>
+    <a class="muted small" href="{{ url_for('wiki.view', slug=w.slug) }}">({{ w.refs }} link{{ 's' if w.refs != 1 }})</a></li>
+{% else %}<li class="muted">None. Every link goes somewhere.</li>{% endfor %}
+</ul>
+{% endblock %}

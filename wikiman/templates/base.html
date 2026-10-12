@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} · {{ site_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>try{var t=localStorage.getItem('wm-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('wiki.index') }}">{{ site_name }}</a>
+  <form class="search" action="{{ url_for('wiki.search') }}" method="get" role="search">
+    <input type="search" name="q" placeholder="Search or jump to a page…" value="{{ q|default('') }}" accesskey="f" aria-label="Search">
+    <input type="hidden" name="go" value="1">
+  </form>
+  <nav class="nav">
+    <a href="{{ url_for('wiki.recent') }}">Recent</a>
+    <a href="{{ url_for('wiki.all_pages') }}">All pages</a>
+    <a href="{{ url_for('wiki.random_page') }}">Random</a>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
+    {% if g.user %}
+      <a href="{{ url_for('wiki.user', username=g.user.username) }}" class="me">{{ g.user.username }}{% if g.user.is_admin %} <span class="badge">admin</span>{% endif %}</a>
+      <form action="{{ url_for('auth.logout') }}" method="post" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="linklike">Log out</button>
+      </form>
+    {% else %}
+      <a href="{{ url_for('auth.login', next=request.full_path.rstrip('?')) }}">Log in</a>
+      {% if config.ALLOW_REGISTRATION %}<a href="{{ url_for('auth.register') }}" class="btn small">Sign up</a>{% endif %}
+    {% endif %}
+  </nav>
+</header>
+
+<main class="wrap {% block main_class %}{% endblock %}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}<div class="flash {{ cat }}" role="status">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  Powered by WIKIMAN · <a href="{{ url_for('wiki.wanted') }}">Wanted pages</a> · <a href="{{ url_for('wiki.orphans') }}">Orphaned pages</a>
+</footer>
+<script>
+document.getElementById('themeToggle').addEventListener('click', function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('wm-theme', root.dataset.theme) } catch (e) {}
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

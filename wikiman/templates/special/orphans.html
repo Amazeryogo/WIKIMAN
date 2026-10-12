@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Orphaned pages{% endblock %}
+{% block content %}
+<h1 class="page-title">Orphaned pages</h1>
+<p class="muted">Pages no other page links to.</p>
+<ul class="plain">
+{% for p in pages %}<li><a href="{{ url_for('wiki.view', slug=p.slug) }}">{{ p.title }}</a></li>
+{% else %}<li class="muted">None.</li>{% endfor %}
+</ul>
+{% endblock %}

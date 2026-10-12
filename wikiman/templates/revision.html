@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ rev.title }} (revision {{ rev.id }}){% endblock %}
+{% block content %}
+<article class="page">
+  <h1 class="page-title">{{ rev.title }}</h1>
+  {% set active = 'history' %}{% include "_tabs.html" %}
+  <div class="flash info">
+    {% if is_current %}This is the current revision.{% else %}You're looking at an old revision{% endif %}
+    from {{ rev.created_at|ago }} by {{ rev.username or 'system' }}.
+    <a href="{{ url_for('wiki.diff', slug=page.slug, to=rev.id) }}">See what changed</a>
+    {% if not is_current %}· <a href="{{ url_for('wiki.view', slug=page.slug) }}">Current version</a>
+      {% if can_edit(page) %}
+      · <form method="post" action="{{ url_for('wiki.revert', slug=page.slug, rev_id=rev.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="linklike">Revert to this</button>
+        </form>
+      {% endif %}
+    {% endif %}
+  </div>
+  <div class="prose">{{ html }}</div>
+</article>
+{% endblock %}

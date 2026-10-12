@@ -1,0 +1,17 @@
+<table class="list">
+  <thead><tr><th>When</th><th>Page</th>{% if show_user is not defined or show_user %}<th>Who</th>{% endif %}<th>Size</th><th>Summary</th></tr></thead>
+  <tbody>
+  {% for c in changes %}
+    {% set delta = c.size - (c.prev_size or 0) %}
+    <tr>
+      <td><a href="{{ url_for('wiki.diff', slug=c.slug, to=c.id) }}" title="See the diff">{{ c.created_at|ago }}</a></td>
+      <td>{% if c.deleted %}<s>{{ c.title }}</s>{% else %}<a href="{{ url_for('wiki.view', slug=c.slug) }}">{{ c.title }}</a>{% endif %}{% if c.prev_size is none %} <span class="badge new">new</span>{% endif %}</td>
+      {% if show_user is not defined or show_user %}<td>{% if c.username %}<a href="{{ url_for('wiki.user', username=c.username) }}">{{ c.username }}</a>{% else %}<em>system</em>{% endif %}</td>{% endif %}
+      <td class="delta {{ 'pos' if delta > 0 else ('neg' if delta < 0) }}">{{ '%+d'|format(delta) }}</td>
+      <td>{{ c.summary }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">No edits yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

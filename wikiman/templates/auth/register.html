@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<form method="post" class="card auth">
+  <h1>Sign up</h1>
+  {% if first_user %}<p class="flash info">You're the first one here, so this account becomes the admin.</p>{% endif %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="field"><span>Username</span><input name="username" autocomplete="username" pattern="[A-Za-z0-9_.\-]{3,32}" required autofocus></label>
+  <label class="field"><span>Password <small class="muted">(8+ characters)</small></span><input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+  <label class="field"><span>Confirm password</span><input type="password" name="confirm" autocomplete="new-password" minlength="8" required></label>
+  <button class="btn block">Create account</button>
+  <p class="muted">Already have one? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+</form>
+{% endblock %}

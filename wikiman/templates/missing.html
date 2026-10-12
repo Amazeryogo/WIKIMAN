@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<article class="page empty-state">
+  <h1 class="page-title">{{ title }}</h1>
+  <p>This page doesn't exist{% if deleted %} anymore. It was deleted, but its history is kept and comes back if you recreate it{% endif %}.</p>
+  {% if g.user %}
+    <a class="btn" href="{{ url_for('wiki.edit', slug=slug, title=title) }}">Create “{{ title }}”</a>
+  {% else %}
+    <a class="btn" href="{{ url_for('auth.login', next=url_for('wiki.edit', slug=slug, title=title)) }}">Log in to create it</a>
+  {% endif %}
+  {% if backlinks %}
+    <h2>Pages that link here</h2>
+    <ul>{% for b in backlinks %}<li><a href="{{ url_for('wiki.view', slug=b.slug) }}">{{ b.title }}</a>{% if b.via %} <span class="muted small">via {{ b.via }}</span>{% endif %}</li>{% endfor %}</ul>
+  {% endif %}
+</article>
+{% endblock %}
